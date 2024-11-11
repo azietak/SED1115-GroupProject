@@ -1,3 +1,4 @@
+# Yann
 def button_checker(press: bool) -> bool :
 	"""
 	detects if button is being pressed or not (boolean value)
@@ -6,6 +7,7 @@ def button_checker(press: bool) -> bool :
 	"""
 	return button_state 
 
+# Yann
 def pen_placement(button_state: bool) :
 	"""
 	determines the pen angle based on the button state.
@@ -15,6 +17,7 @@ def pen_placement(button_state: bool) :
 	"""
 	return pen_angle
 
+# Mbappe
 # map potentiometer inputs to X and Y coordinates
 def map_potentiometer(analogue_value: int, in_min: int, in_max: int, out_min: int, out_max: int) -> float:
 	
@@ -25,6 +28,7 @@ def map_potentiometer(analogue_value: int, in_min: int, in_max: int, out_min: in
 	# should in_min, in_max, out_min, out_max be given fixed values...?
 	return coordinate
 
+# Amelie
 def inverse_kinematics(X: float, Y: float) -> tuple[float, float]:
 	"""
 	use trigonometry to figure out what the angles of shoulder
@@ -32,6 +36,7 @@ def inverse_kinematics(X: float, Y: float) -> tuple[float, float]:
 	"""
 	return theta_1, theta_2
 
+# Done in Lab 6
 # converts angle (degrees) into duty cycle value (between 0 and 65535)
 # that we want to give the different servos
 def translate(angle: float) -> int:
@@ -43,11 +48,12 @@ def translate(angle: float) -> int:
 
 	return duty_u16_value # Replace with your return value
 
+# Lili
 def movement(duty_cycle) :
     # set PWM value to the right duty cycle so it makes servo move
 	return 0 # replace with code that will make servo move
 
-
+# Lili
 def main():
 	# initialize default "home" position for X, Y coordinates
     default_x = 0  # e.g. center of the workspace
