@@ -1,3 +1,18 @@
+from machine import Pin, PWM, ADC
+import time
+
+# Initialize PWM servo ouputs
+pen_servo = PWM(Pin(16)) #this is an LED and should be changed to be the servos
+elbow_servo = PWM(Pin(15)) #change number
+shoulder_servo = PWM(Pin(14)) #changer number
+
+# set PWM frequency
+pwm.freq(50)
+
+# Initialize ADC input knobs
+left_knob = ADC(Pin(27))
+right_knob = ADC(Pin(26))
+
 # Yann
 def button_checker(press: bool) -> bool :
 	"""
@@ -49,9 +64,9 @@ def translate(angle: float) -> int:
 	return duty_u16_value # Replace with your return value
 
 # Lili
-def movement(duty_cycle) :
-    # set PWM value to the right duty cycle so it makes servo move
-	return 0 # replace with code that will make servo move
+def movement(duty_cycle, servo) :
+    # set PWM value to the right duty cycle so it makes corresponding servo move
+	servo.duty_u16(duty_cycle)
 
 # Lili
 def main():
