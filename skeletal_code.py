@@ -7,7 +7,9 @@ elbow_servo = PWM(Pin(15)) #change number
 shoulder_servo = PWM(Pin(14)) #changer number
 
 # set PWM frequency
-pwm.freq(50)
+pen_servo.freq(50)
+elbow_servo.freq(50)
+shoulder_servo.freq(50)
 
 # Initialize ADC input knobs
 left_knob = ADC(Pin(27))
