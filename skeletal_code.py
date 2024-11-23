@@ -1,10 +1,13 @@
 from machine import Pin, PWM, ADC
 import time
 
+# Initialize button
+button_pin = Pin(22, Pin.IN, Pin.PULL_DOWN)
+
 # Initialize PWM servo ouputs
-pen_servo = PWM(Pin(16)) #this is an LED and should be changed to be the servos
-elbow_servo = PWM(Pin(15)) #change number
-shoulder_servo = PWM(Pin(14)) #changer number
+pen_servo = PWM(Pin(0))
+elbow_servo = PWM(Pin(1))
+shoulder_servo = PWM(Pin(2))
 
 # set PWM frequency
 pen_servo.freq(50)
@@ -16,23 +19,32 @@ left_knob = ADC(Pin(27))
 right_knob = ADC(Pin(26))
 
 # Yann
-def button_checker(press: bool) -> bool :
-	"""
-	detects if button is being pressed or not (boolean value)
-	then accordignly changes the button_state. there are two possible
-	button states : up or down. a new button press toggles to other state
-	"""
-	return button_state 
+# fonction qui prend comme argument l'état du bouton et l'état du stylo
+def button_checker(new_button_state,pen_state) :
+    # mise à jour de l'état du bouton à chaque passage dans la boucle
+    last_button_state = new_button_state
+    # obenir état du bouton physique acctuel
+    new_button_state = button_pin.value()
+    # la détection de contour (tel que vu dans lab 3)
+    if new_button_state == 1 and last_button_state == 0:
+        # basculer l'état du stylo (si l'état était Vrai, alors ça devient Faux et inversment)
+        pen_state = not pen_state
+        print(f"L'état du stylo est {pen_state}")
+        time.sleep(0.05) # délai anti-rebond (debounce delay)
+    # retourner les états mis à jour
+    return new_button_state, pen_state 
 
 # Yann
-def pen_placement(button_state: bool) :
-	"""
-	determines the pen angle based on the button state.
-	
-	two specfic angles will be determined. one is when pen is up, the other
-	for when pen is down. 
-	"""
-	return pen_angle
+# fonction pour déterminer l'angle en fonction de si le bouton a été pesé 
+def pen_placement(pen_state: bool) :
+    # Faux = stylo levé, Vrai = stylo baissé
+    if pen_state == True : # stylo baissé
+        pen_angle = 30
+    elif pen_state == False : # stylo levé
+        pen_angle = 0
+    else :
+        print("Problème! L'état du stylo n'est pas défini")
+    return pen_angle
 
 # Mbappe
 # map potentiometer inputs to X and Y coordinates
@@ -73,40 +85,40 @@ def movement(duty_cycle, servo) :
 # Lili
 def main():
 	# initialize default "home" position for X, Y coordinates
-    default_x = 0  # e.g. center of the workspace
-    default_y = 0  # e.g. enter of the workspace
+	default_x = 0  # e.g. center of the workspace
+	default_y = 0  # e.g. enter of the workspace
 	
-    # initialize necessary variables
-    button_state = False  # initial state of the button (up or down)
-    pen_angle = 0         # initial pen angle
-    potentiometer_value_x = 0  # placeholder for X potentiometer input
-    potentiometer_value_y = 0  # placeholder for Y potentiometer input
+	# initialize necessary variables
+	pen_state = False # initial state of the pen (F: up or T: down)
+	new_button_state = button_pin.value()
+	potentiometer_value_x = 0  # placeholder for X potentiometer input
+	potentiometer_value_y = 0  # placeholder for Y potentiometer input
 
-    # define the input and output ranges for mapping potentiometer values
-    in_min, in_max = 0, 100      # input range for potentiometers
-    out_min, out_max = 0, 100  # output range for coordinates
+	# define the input and output ranges for mapping potentiometer values
+	in_min, in_max = 0, 100      # input range for potentiometers
+	out_min, out_max = 0, 100  # output range for coordinates
+	
+	while True:  # main loop
+		# detect button press and toggle pen state
+	        new_button_state, pen_state = button_checker(new_button_state, pen_state) # assign the returned values to variables
+    		pen_angle = pen_placement(pen_state)
+	
+	        # read potentiometer inputs and map them to coordinates
+	        x_coordinate = map_potentiometer(potentiometer_value_x, in_min, in_max, out_min, out_max)
+	        y_coordinate = map_potentiometer(potentiometer_value_y, in_min, in_max, out_min, out_max)
+	
+	        # from X,Y coordinates, get associated arm and shoulder servo angles
+	        theta_1, theta_2 = inverse_kinematics(x_coordinate, y_coordinate)
+	
+	        # determine the duty cycle values for the servos based on angles
+	        duty_cycle_pen = translate(pen_angle)
+	        duty_cycle_shoulder = translate(theta_1)
+	        duty_cycle_elbow = translate(theta_2)
+	
+	        # move the servos to the desired positions
+	        movement(duty_cycle_pen)      # move pen servo
+	        movement(duty_cycle_shoulder) # move shoulder servo
+        	movement(duty_cycle_elbow)    # move elbow servo
 
-    while True:  # main loop
-        # detect button press and toggle pen state
-        button_state = button_checker(True)  # replace "True" with the actual button press input
-        pen_angle = pen_placement(button_state)
-
-        # read potentiometer inputs and map them to coordinates
-        x_coordinate = map_potentiometer(potentiometer_value_x, in_min, in_max, out_min, out_max)
-        y_coordinate = map_potentiometer(potentiometer_value_y, in_min, in_max, out_min, out_max)
-
-        # from X,Y coordinates, get associated arm and shoulder servo angles
-        theta_1, theta_2 = inverse_kinematics(x_coordinate, y_coordinate)
-
-        # determine the duty cycle values for the servos based on angles
-        duty_cycle_pen = translate(pen_angle)
-        duty_cycle_shoulder = translate(theta_1)
-        duty_cycle_elbow = translate(theta_2)
-
-        # move the servos to the desired positions
-        movement(duty_cycle_pen)      # move pen servo
-        movement(duty_cycle_shoulder) # move shoulder servo
-        movement(duty_cycle_elbow)    # move elbow servo
-
-        # add a delay or loop-breaking condition as needed (e.g., based on user input)
+        	# add a delay or loop-breaking condition as needed (e.g., based on user input)
 		
