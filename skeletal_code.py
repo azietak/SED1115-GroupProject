@@ -48,13 +48,11 @@ def pen_placement(pen_state: bool) :
 
 # Mbappe
 # map potentiometer inputs to X and Y coordinates
-def map_potentiometer(analogue_value: int, in_min: int, in_max: int, out_min: int, out_max: int) -> float:
-	
+def map_potentiometer(analogue_value: int, knob_min: int, knob_max: int, paper_dimension_min: float, paper_dimension_max: float) -> float:
+	# knob min/max are the potentiometer readings
+	# paper dimension min/max defines the reachable area for the pen
 	# linear mapping formula that scales a value from one range to another
-	# in are the potentiometer readings
-	# out defines the reachable area for the pen
-	coordinate = (analogue_value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-	# should in_min, in_max, out_min, out_max be given fixed values...?
+	coordinate = (analogue_value - knob_min) * (paper_dimension_max - paper_dimension_min) / (knob_max - knob_min) + paper_dimension_min
 	return coordinate
 
 # Amelie
@@ -104,8 +102,8 @@ def main():
     		pen_angle = pen_placement(pen_state)
 	
 	        # read potentiometer inputs and map them to coordinates
-	        x_coordinate = map_potentiometer(potentiometer_value_x, in_min, in_max, out_min, out_max)
-	        y_coordinate = map_potentiometer(potentiometer_value_y, in_min, in_max, out_min, out_max)
+	        x_value = map_potentiometer(left_knob.read_u16(), 0, 65535, 0, 279.4) #11in = 279.4mm
+    		y_value = map_potentiometer(right_knob.read_u16(), 0, 65535, 0, 215.9) #8,5in = 215.9mm
 	
 	        # from X,Y coordinates, get associated arm and shoulder servo angles
 	        theta_1, theta_2 = inverse_kinematics(x_coordinate, y_coordinate)
