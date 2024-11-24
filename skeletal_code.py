@@ -43,6 +43,7 @@ def pen_placement(pen_state: bool) :
     elif pen_state == False : # stylo levé
         pen_angle = 0
     else :
+	pen_angle = None  # explicitly return None for invalid input
         print("Problème! L'état du stylo n'est pas défini")
     return pen_angle
 
