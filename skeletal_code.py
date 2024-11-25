@@ -155,7 +155,7 @@ def main():
     		y_value = map_potentiometer(right_knob.read_u16(), 0, 65535, 0, 215.9) #8,5in = 215.9mm
 	
 	        # from X,Y coordinates, get associated arm and shoulder servo angles
-	        alpha_deg, beta_deg = inverse_kinematics(x_coordinate, y_coordinate)
+	        alpha_deg, beta_deg = inverse_kinematics(x_value, y_value)
 	
 	        # determine the duty cycle values for the servos based on angles
 	        duty_cycle_pen = translate(pen_angle)
