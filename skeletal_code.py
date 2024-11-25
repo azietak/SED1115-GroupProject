@@ -128,20 +128,21 @@ def main():
 	in_min, in_max = 0, 100      # input range for potentiometers
 	out_min, out_max = 0, 100  # output range for coordinates
 	
-#amelie	
-try: 
-      #calculate the angles for shoulder and elbow servos to find home
-      alpha_home, beta_home = inverse_kinematics (default_x, default_y)
-      #convert the shoulder and elbow angle to PWM duty cycle and send to move it
-      movement(translate(alpha_home), shoulder_servo)
-      movement(translate(beta_home), eblow_servo)
-      
-      #Lifting the pen
-      movement(translate(0), pen_servo)
-      
-      print("Pen moved to home position")
- except ValueError:
-      print("Issue moving to home position")
+	#amelie	
+	#setting the home position
+	try: 
+	      #calculate the angles for shoulder and elbow servos to find home
+	      alpha_home, beta_home = inverse_kinematics (default_x, default_y)
+	      #convert the shoulder and elbow angle to PWM duty cycle and send to move it
+	      movement(translate(alpha_home), shoulder_servo)
+	      movement(translate(beta_home), eblow_servo)
+	      
+	      #Lifting the pen
+	      movement(translate(0), pen_servo)
+	      
+	      print("Pen moved to home position")
+	 except ValueError:
+	      print("Issue moving to home position")
 	
 	while True:  # main loop
 		# detect button press and toggle pen state
@@ -153,12 +154,12 @@ try:
     		y_value = map_potentiometer(right_knob.read_u16(), 0, 65535, 0, 215.9) #8,5in = 215.9mm
 	
 	        # from X,Y coordinates, get associated arm and shoulder servo angles
-	        theta_1, theta_2 = inverse_kinematics(x_coordinate, y_coordinate)
+	        alpha_deg, beta_deg = inverse_kinematics(x_coordinate, y_coordinate)
 	
 	        # determine the duty cycle values for the servos based on angles
 	        duty_cycle_pen = translate(pen_angle)
-	        duty_cycle_shoulder = translate(theta_1)
-	        duty_cycle_elbow = translate(theta_2)
+	        duty_cycle_shoulder = translate(alpha_deg)
+	        duty_cycle_elbow = translate(beta_deg)
 	
 	        # move the servos to the desired positions
 	        movement(duty_cycle_pen)      # move pen servo
