@@ -72,17 +72,17 @@ def inverse_kinematics(x: float, y: float) -> tuple[float,float]:
    distance = math.sqrt(x**2 + y**2)
    
    #check if it is out of reach
-   if distance > (length_1 + length_2):
+   if distance > (length_shoulder + length_elbow):
       print("Target is out of reach")
    
    #calculate the eblow angle beta
-   cos_beta = (x**2 + y**2 - length_1**2 - length_2**2)/(2 * length_1 * length_2)
+   cos_beta = (x**2 + y**2 - length_shoulder**2 - length_elbow**2)/(2 * length_shoulder * length_elbow)
    beta = math.acos(cos_beta)
    
    #calculate shoulder angle alpha
-   sin_beta = math.sqrt(1-cos_beta**2) #sin of theta_2
-   x_coordinate = length_1 + length_2 * cos_beta
-   y_coordinate = length_1 * sin_beta
+   sin_beta = math.sqrt(1-cos_beta**2) #sin of beta_deg
+   x_coordinate = length_shoulder + length_elbow * cos_beta
+   y_coordinate = length_shoulder * sin_beta
    alpha= math.atan2 (y,x) - math.atan2 (y_coordinate, x_coordinate)
    
    #convert to degrees
@@ -111,8 +111,8 @@ def movement(duty_cycle, servo) :
 # Lili
 def main():
 	#lab 8 says length 155mm but zitai said 150mmm??
-	length_1 = 150 #Shoulder to elbow segment (in mm) 
-	length_2 = 150 #Elbow to pen segment (in mm)
+	length_shoulder = 150 #Shoulder to elbow segment (in mm) 
+	length_elbow = 150 #Elbow to pen segment (in mm)
 	
 	# initialize default "home" position for X, Y coordinates
 	default_x = 107.95  # e.g. center of the workspace
