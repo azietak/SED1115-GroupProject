@@ -57,12 +57,39 @@ def map_potentiometer(analogue_value: int, knob_min: int, knob_max: int, paper_d
 	return coordinate
 
 # Amelie
-def inverse_kinematics(X: float, Y: float) -> tuple[float, float]:
-	"""
-	use trigonometry to figure out what the angles of shoulder
-	and elbow servo should be based on x,y coordinates
-	"""
-	return theta_1, theta_2
+def inverse_kinematics(x: float, y: float) -> tuple[float,float]:
+   """Calculates souldeer and elbow angles required to reach target x and y 
+   
+   Parameters:
+   x (float) : target x coordinate
+   y (float) : target y cooridinate
+   
+   Returns: 
+   tuple: (shoulder angle, elbow angle)
+   """
+   
+   #calculate the distance from the shoulder to the target spot
+   distance = math.sqrt(x**2 + y**2)
+   
+   #check if it is out of reach
+   if distance > (length_1 + length_2):
+      print("Target is out of reach")
+   
+   #calculate the eblow angle beta
+   cos_beta = (x**2 + y**2 - length_1**2 - length_2**2)/(2 * length_1 * length_2)
+   beta = math.acos(cos_beta)
+   
+   #calculate shoulder angle alpha
+   sin_beta = math.sqrt(1-cos_beta**2) #sin of theta_2
+   x_coordinate = length_1 + length_2 * cos_beta
+   y_coordinate = length_1 * sin_beta
+   alpha= math.atan2 (y,x) - math.atan2 (y_coordinate, x_coordinate)
+   
+   #convert to degrees
+   alpha_deg = math.degrees(alpha)
+   beta_deg = math.degrees(beta)
+   
+   return alpha_deg, beta_deg
 
 # Done in Lab 6
 # converts angle (degrees) into duty cycle value (between 0 and 65535)
@@ -83,9 +110,13 @@ def movement(duty_cycle, servo) :
 
 # Lili
 def main():
+	#lab 8 says length 155mm but zitai said 150mmm??
+	length_1 = 150 #Shoulder to elbow segment (in mm) 
+	length_2 = 150 #Elbow to pen segment (in mm)
+	
 	# initialize default "home" position for X, Y coordinates
-	default_x = 0  # e.g. center of the workspace
-	default_y = 0  # e.g. enter of the workspace
+	default_x = 107.95  # e.g. center of the workspace
+	default_y = 139.7  # e.g. enter of the workspace
 	
 	# initialize necessary variables
 	pen_state = False # initial state of the pen (F: up or T: down)
@@ -96,6 +127,21 @@ def main():
 	# define the input and output ranges for mapping potentiometer values
 	in_min, in_max = 0, 100      # input range for potentiometers
 	out_min, out_max = 0, 100  # output range for coordinates
+	
+#amelie	
+try: 
+      #calculate the angles for shoulder and elbow servos to find home
+      alpha_home, beta_home = inverse_kinematics (default_x, default_y)
+      #convert the shoulder and elbow angle to PWM duty cycle and send to move it
+      movement(translate(alpha_home), shoulder_servo)
+      movement(translate(beta_home), eblow_servo)
+      
+      #Lifting the pen
+      movement(translate(0), pen_servo)
+      
+      print("Pen moved to home position")
+ except ValueError:
+      print("Issue moving to home position")
 	
 	while True:  # main loop
 		# detect button press and toggle pen state
