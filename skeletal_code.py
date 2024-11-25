@@ -1,5 +1,6 @@
 from machine import Pin, PWM, ADC
 import time
+import math 
 
 # Initialize button
 button_pin = Pin(22, Pin.IN, Pin.PULL_DOWN)
