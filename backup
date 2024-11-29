@@ -1,0 +1,112 @@
+from machine import Pin, PWM, ADC
+import time
+
+# Initialize button
+button_pin = Pin(22, Pin.IN, Pin.PULL_DOWN)
+
+# Initialize PWM servo ouputs
+pen_servo = PWM(Pin(2))
+elbow_servo = PWM(Pin(1))
+shoulder_servo = PWM(Pin(0))
+
+# set PWM frequency
+pen_servo.freq(50)
+elbow_servo.freq(50)
+shoulder_servo.freq(50)
+
+# Initialize ADC input knobs
+left_knob = ADC(Pin(27)) #controls elbow servo
+right_knob = ADC(Pin(26)) #controls shoulder servo
+
+# fonction qui prend comme argument l'état du bouton et l'état du stylo
+def button_checker(new_button_state,pen_state) :
+    # mise à jour de l'état du bouton à chaque passage dans la boucle
+    last_button_state = new_button_state
+    # obenir état du bouton physique acctuel
+    new_button_state = button_pin.value()
+    # la détection de contour (tel que vu dans lab 3)
+    if new_button_state == 1 and last_button_state == 0:
+        # basculer l'état du stylo (si l'état était Vrai, alors ça devient Faux et inversment)
+        pen_state = not pen_state
+        print(f"L'état du stylo est {pen_state}")
+        time.sleep(0.05) # délai anti-rebond (debounce delay)
+    # retourner les états mis à jour
+    return new_button_state, pen_state 
+
+# Yann
+# fonction pour déterminer l'angle en fonction de si le bouton a été pesé 
+def pen_placement(pen_state: bool):
+	# Faux = stylo levé, Vrai = stylo baissé
+	if (pen_state == True): #stylo baissé
+		pen_duty = 3000
+	elif (pen_state == False): #stylo levé
+		pen_duty = 2300
+	else:
+		pen_duty = None #explicitly return None for invalid input
+		print("Problème! L'état du stylo n'est pas défini")
+	return pen_duty
+
+# function to convert ADC values into angles
+def adc_to_angle(input_value: int) -> float:
+    min_input = 0
+    max_input = 65535
+    min_angle = 0
+    max_angle = 180
+
+    # calculate the angle using linear mapping formula
+    angles = ((input_value - min_input) / (max_input - min_input)) * (min_angle - max_angle) + max_angle
+    return angles
+
+# converts angle (degrees) into duty cycle value (between 0 and 65535)
+def translate(angle: float) -> int:
+	pulse_width = 500 + (2500 - 500) * (angle/180)
+	duty_cycle = pulse_width / 20000 # 20000 microseconds = 20ms period
+	duty_u16_value = int(duty_cycle*65535)
+
+	duty_u16_value = max(2300, min(7500, duty_u16_value)) # clamps values within a safe range
+
+	return duty_u16_value # Replace with your return value
+
+# set PWM value to the right duty cycle so it makes corresponding servo move
+def movement_big_servo(duty_cycle, servo) :
+	# only make is move within a safe range
+	if (7500 > duty_cycle and duty_cycle > 2300) :
+		servo.duty_u16(duty_cycle)
+	else : 
+		return None
+		#print(f"PWM value is unsafe with a value of {duty_cycle}")
+	
+# set PWM value to the right duty cycle so it makes corresponding servo move
+# different min/mx values than the big servos. this one is for pen servo
+def movement_mini_servo(duty_cycle, servo) :
+	if (8192 > duty_cycle and duty_cycle > 1639) :
+		servo.duty_u16(duty_cycle)
+	else : 
+		return None
+		#print(f"PWM value is unsafe with a value of {duty_cycle}")
+
+def main():
+    # initialize pen state to up
+    pen_state = False
+    new_button_state = button_pin.value()
+
+    while True :
+        # read pen state and obtain corresponding duty cycle
+        new_button_state, pen_state = button_checker(new_button_state, pen_state) # assign the returned values to variables
+        pen_duty = pen_placement(pen_state)
+
+        # use knobs to set duty cycle value for servos
+        shoulder_angle = adc_to_angle(right_knob.read_u16())
+        elbow_angle = adc_to_angle(left_knob.read_u16())
+
+        # convert angles into duty cycles
+        shoulder_duty = translate(shoulder_angle)
+        elbow_duty = translate(elbow_angle)
+        print(f"shoulder duty is {shoulder_duty} elbow duty is {elbow_duty}")
+
+        # make servos move
+        movement_mini_servo(pen_duty, pen_servo)
+        movement_big_servo(shoulder_duty, shoulder_servo)
+        movement_big_servo(elbow_duty, elbow_servo)
+
+main()
