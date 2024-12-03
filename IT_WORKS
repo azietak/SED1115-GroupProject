@@ -72,7 +72,7 @@ def inverse_kinematics(x: float, y: float) -> tuple[float,float]:
    
    #calculate the eblow angle beta
    cos_beta = (x**2 + y**2 - length_shoulder**2 - length_elbow**2)/(2 * length_shoulder * length_elbow)
-   cos_beta = max(min(cos_beta, 1), -1)  # Clamp value to handle floating-point errors
+   cos_beta = max(min(cos_beta, 1), -1)  # ChatGPT suggested to clamp values to handle floating-point errors
    beta = math.acos(cos_beta)
    
    #calculate shoulder angle alpha
